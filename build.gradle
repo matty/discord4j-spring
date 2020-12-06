@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+    id 'maven'
+}
+
+group 'com.github.matty.discord4j.spring'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "com.discord4j:discord4j-core:3.1.2"
+    compileOnly 'org.springframework.boot:spring-boot-starter:2.3.2.RELEASE'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+test {
+    useJUnitPlatform()
+}
