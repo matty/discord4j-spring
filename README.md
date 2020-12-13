@@ -1,6 +1,8 @@
 # Discord4J Spring
 Integrate Discord4J into a Spring Boot application.
 
+**This project is work in progress.**
+
 # Usage
 To get started add this library to your Spring Boot project and enable the Discord integration.
 
@@ -20,13 +22,15 @@ You can listen to any event using the DiscordEventListener annotation.
 ```java
 @Component
 public class PingMessageEvent {
-    @DiscordEventListener(MessageCreateEvent.class)
-    public void handleBotStatusCommand(Mono<MessageCreateEvent> messageCreateEvent) {
-        messageCreateEvent.map(MessageCreateEvent::getMessage)
-                .filter(m -> "!ping".equals(m.getContent()))
-                .flatMap(Message::getChannel)
-                .flatMap(ch -> ch.createMessage("Pong!"))
-                .subscribe();
+    @DiscordEventListener
+    public Mono<Message> pingCommand(MessageCreateEvent messageCreateEvent) {
+        Message msg = messageCreateEvent.getMessage();
+        if ("!ping".equals(msg.getContent())) {
+            return msg.getChannel()
+                    .flatMap(ch -> ch.createMessage("Pong!"));
+        }
+
+        return Mono.empty();
     }
 }
 ```
