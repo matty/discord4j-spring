@@ -4,8 +4,7 @@ import com.github.matty.discord4j.spring.annotations.DiscordEventListener;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.EventDispatcher;
 import discord4j.core.event.domain.Event;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.reactivestreams.Publisher;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import reactor.core.publisher.Mono;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -26,12 +24,11 @@ import java.lang.reflect.Method;
 @Component("discordEventBeanProcessor")
 @ConditionalOnBean(GatewayDiscordClient.class)
 public class DiscordEventBeanProcessor implements BeanPostProcessor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DiscordEventBeanProcessor.class);
 
     EventDispatcher eventDispatcher;
 
     @Autowired
-    public DiscordEventBeanProcessor(EventDispatcher eventDispatcher) {
+    public DiscordEventBeanProcessor( EventDispatcher eventDispatcher) {
         this.eventDispatcher = eventDispatcher;
     }
 
@@ -46,22 +43,31 @@ public class DiscordEventBeanProcessor implements BeanPostProcessor {
         return bean;
     }
 
+    /**
+     * Methods annotated with {@link DiscordEventListener}.
+     */
+    @SuppressWarnings("unchecked")
     private void doDiscordEventListener(Method method, Object bean) {
-        DiscordEventListener discordEventListener
-                = method.getAnnotation(DiscordEventListener.class);
-
-        LOGGER.debug("Register {} for event {}.", bean.getClass().getSimpleName(),
-                discordEventListener.value().getSimpleName());
-
-        eventDispatcher.on(discordEventListener.value())
-                .doOnNext(event -> onEvent(Mono.just(event), method, bean)).subscribe();
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        if (parameterTypes.length > 0) {
+            if (Event.class.isAssignableFrom(parameterTypes[0])) {
+                doEvent(method, bean, (Class<? extends Event>) parameterTypes[0]);
+            }
+        }
     }
 
-    private void onEvent(Mono<? extends Event> event, Method method, Object bean) {
-        try {
-            method.invoke(bean, event);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
+    private void doEvent(Method method, Object bean, Class<? extends Event> parameterClazz) {
+        eventDispatcher.on(parameterClazz)
+                .flatMap(e -> {
+                    Object r = ReflectionUtils.invokeMethod(method, bean, e);
+                    if (r != null) {
+                        if (r instanceof Publisher) {
+                            return (Publisher<?>) r;
+                        }
+                    }
+
+                    return Mono.empty();
+                })
+                .subscribe();
     }
 }

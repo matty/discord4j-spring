@@ -7,11 +7,12 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.EventDispatcher;
 import discord4j.core.shard.GatewayBootstrap;
 import discord4j.gateway.GatewayOptions;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.*;
-import reactor.core.publisher.Mono;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Import;
 
 /**
  * Auto-configuration for {@link DiscordClient}.
@@ -22,49 +23,29 @@ import reactor.core.publisher.Mono;
 @Configuration
 @Import(DiscordTokenAutoConfiguration.class)
 @ConditionalOnBean(annotation = EnableDiscord.class)
-public class DiscordAutoConfiguration {
+public class DiscordAutoConfiguration extends DiscordClientConfig {
 
-    private final DiscordClient discordClient;
-
-    @Autowired
-    public DiscordAutoConfiguration(DiscordTokenProvider tokenProvider) {
-        this.discordClient = DiscordClientBuilder.create(tokenProvider.getToken()).build();
+    @Bean("discordClient")
+    @ConditionalOnMissingBean
+    public DiscordClient discordClient(DiscordTokenProvider tokenProvider) {
+        return DiscordClientBuilder.create(tokenProvider.getToken()).build();
     }
 
     @Bean("eventDispatcher")
+    @ConditionalOnMissingBean
     public EventDispatcher eventDispatcher() {
         return EventDispatcher.builder().build();
     }
 
     @Bean
-    @DependsOn({"eventDispatcher", "discordEventBeanProcessor"})
+    @DependsOn({"discordClient", "eventDispatcher", "discordEventBeanProcessor"})
     @ConditionalOnMissingBean
-    public GatewayDiscordClient gatewayDiscordClient(EventDispatcher eventDispatcher) {
-        return this.login(eventDispatcher).block();
-    }
-
-    /**
-     * Call to {@link GatewayBootstrap#login()} and return the discord client.
-     *
-     * @return {@link Mono <GatewayDiscordClient>}.
-     */
-    public Mono<GatewayDiscordClient> login(EventDispatcher eventDispatcher) {
-        GatewayBootstrap<GatewayOptions> gateway = this.discordClient.gateway();
+    public GatewayDiscordClient gatewayDiscordClient(DiscordClient discordClient, EventDispatcher eventDispatcher) {
+        GatewayBootstrap<GatewayOptions> gateway = discordClient.gateway();
         return gateway
                 .setEventDispatcher(eventDispatcher)
                 .login()
-                .doOnNext(this::startAwaitThread);
-    }
-
-    private void startAwaitThread(final GatewayDiscordClient gatewayDiscordClient) {
-        Thread awaitThread = new Thread("discord") {
-            @Override
-            public void run() {
-                gatewayDiscordClient.onDisconnect().block();
-            }
-        };
-        awaitThread.setContextClassLoader(getClass().getClassLoader());
-        awaitThread.setDaemon(false);
-        awaitThread.start();
+                .doOnNext(this::startAwaitThread)
+                .block();
     }
 }
