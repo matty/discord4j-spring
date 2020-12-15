@@ -14,6 +14,7 @@ import org.springframework.util.ReflectionUtils;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 @Component("discordChatBeanProcessor")
 @ConditionalOnBean(GatewayDiscordClient.class)
@@ -55,14 +56,10 @@ public class DiscordChatBeanProcessor implements BeanPostProcessor {
         eventDispatcher.on(parameterClazz)
                 .filter(m -> m.getMessage().getContent().equals(discordChat.filter()))
                 .flatMap(e -> {
-                    Object r = ReflectionUtils.invokeMethod(method, bean, e);
-                    if (r != null) {
-                        if (r instanceof Publisher) {
-                            return (Publisher<?>) r;
-                        }
-                    }
-
-                    return Mono.empty();
+                    Optional<Object> r = Optional.ofNullable(ReflectionUtils.invokeMethod(method, bean, e));
+                    return r.filter(o -> o instanceof Publisher)
+                            .map(o -> (Publisher)o)
+                            .orElse(Mono.empty());
                 })
                 .subscribe();
     }

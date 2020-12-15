@@ -14,6 +14,7 @@ import org.springframework.util.ReflectionUtils;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 /**
  * BeanPostProcessor for {@link Event}'s.
@@ -59,14 +60,10 @@ public class DiscordEventBeanProcessor implements BeanPostProcessor {
     private void doEvent(Method method, Object bean, Class<? extends Event> parameterClazz) {
         eventDispatcher.on(parameterClazz)
                 .flatMap(e -> {
-                    Object r = ReflectionUtils.invokeMethod(method, bean, e);
-                    if (r != null) {
-                        if (r instanceof Publisher) {
-                            return (Publisher<?>) r;
-                        }
-                    }
-
-                    return Mono.empty();
+                    Optional<Object> r = Optional.ofNullable(ReflectionUtils.invokeMethod(method, bean, e));
+                    return r.filter(o -> o instanceof Publisher)
+                            .map(o -> (Publisher)o)
+                            .orElse(Mono.empty());
                 })
                 .subscribe();
     }
