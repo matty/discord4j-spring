@@ -37,7 +37,7 @@ public class PingMessageEvent {
 
 # Token
 
-To provide a Discord you can add it to your configuration file ``discord.token=`` or as a startup parameter ``-Ddiscord.token=""``. If you wish you can declare a custom token provider by creating a configuration class with a ``DiscordTokenProvider`` bean.
+To provide a Discord token you can add it to your configuration file ``discord.token=`` or as a startup parameter ``-Ddiscord.token=""``. If you wish you can declare a custom token provider by creating a configuration class with a ``DiscordTokenProvider`` bean.
 
 ```java
 @Configuration
