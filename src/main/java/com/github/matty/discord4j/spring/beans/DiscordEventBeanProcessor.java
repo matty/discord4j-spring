@@ -1,5 +1,6 @@
 package com.github.matty.discord4j.spring.beans;
 
+import com.github.matty.discord4j.spring.annotations.DiscordErrorHandler;
 import com.github.matty.discord4j.spring.annotations.DiscordEventListener;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.EventDispatcher;
@@ -14,6 +15,7 @@ import org.springframework.util.ReflectionUtils;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -65,6 +67,8 @@ public class DiscordEventBeanProcessor implements BeanPostProcessor {
                             .map(o -> (Publisher)o)
                             .orElse(Mono.empty());
                 })
+                .doOnError(error -> EventUtils.doOnError(bean, error))
+                .onErrorStop()
                 .subscribe();
     }
 }
