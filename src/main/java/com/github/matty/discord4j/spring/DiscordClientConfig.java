@@ -4,15 +4,22 @@ import discord4j.core.GatewayDiscordClient;
 
 public abstract class DiscordClientConfig {
 
-    protected void startAwaitThread(final GatewayDiscordClient gatewayDiscordClient) {
-        Thread awaitThread = new Thread("discord") {
-            @Override
-            public void run() {
-                gatewayDiscordClient.onDisconnect().block();
-            }
+    AwaitThreadProvider awaitThread(GatewayDiscordClient gatewayDiscordClient) {
+        return () -> {
+            Thread awaitThread = new Thread("discord") {
+                @Override
+                public void run() {
+                    gatewayDiscordClient.onDisconnect().block();
+                }
+            };
+            awaitThread.setContextClassLoader(getClass().getClassLoader());
+            awaitThread.setDaemon(false);
+            return awaitThread;
         };
-        awaitThread.setContextClassLoader(getClass().getClassLoader());
-        awaitThread.setDaemon(false);
-        awaitThread.start();
+    }
+
+    @FunctionalInterface
+    interface AwaitThreadProvider {
+        Thread awaitThread();
     }
 }

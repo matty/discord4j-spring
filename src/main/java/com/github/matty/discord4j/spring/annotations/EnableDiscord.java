@@ -1,7 +1,6 @@
 package com.github.matty.discord4j.spring.annotations;
 
 import com.github.matty.discord4j.spring.DiscordAutoConfiguration;
-import com.github.matty.discord4j.spring.beans.DiscordChatBeanProcessor;
 import com.github.matty.discord4j.spring.beans.DiscordEventBeanProcessor;
 import org.springframework.context.annotation.Import;
 
@@ -18,6 +17,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Import({DiscordAutoConfiguration.class, DiscordEventBeanProcessor.class, DiscordChatBeanProcessor.class})
+@Import({DiscordAutoConfiguration.class, DiscordEventBeanProcessor.class})
 public @interface EnableDiscord {
 }

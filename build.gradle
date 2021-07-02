@@ -11,12 +11,13 @@ repositories {
 }
 
 dependencies {
-    implementation "com.discord4j:discord4j-core:3.1.2"
-    compileOnly 'org.springframework.boot:spring-boot-starter:2.3.2.RELEASE'
+    implementation "com.discord4j:discord4j-core:3.1.6"
+    compileOnly 'org.springframework.boot:spring-boot-starter:2.5.2'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter:2.3.2.RELEASE'
-    testImplementation 'org.springframework.boot:spring-boot-test:2.3.2.RELEASE'
+    testImplementation 'org.springframework.boot:spring-boot-starter:2.5.2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testImplementation 'org.mockito:mockito-core:3.+'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 

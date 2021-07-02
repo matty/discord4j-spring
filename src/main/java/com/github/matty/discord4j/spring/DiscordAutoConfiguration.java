@@ -45,7 +45,7 @@ public class DiscordAutoConfiguration extends DiscordClientConfig {
         return gateway
                 .setEventDispatcher(eventDispatcher)
                 .login()
-                .doOnNext(this::startAwaitThread)
+                .doOnNext(t -> awaitThread(t).awaitThread().start())
                 .block();
     }
 }
