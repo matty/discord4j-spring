@@ -1,2 +1,4 @@
 rootProject.name = 'discord4j-spring'
+include 'samples:discordbot'
+findProject(':samples:discordbot')?.name = 'discordbot'
 

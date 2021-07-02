@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.github.matty.discord4j.spring'
-version '1.0-SNAPSHOT'
+version '1.0'
 
 repositories {
     mavenCentral()
