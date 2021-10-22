@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 /**
  * Configuration for default {@link DiscordTokenProvider}.
  *
- * @author Matty Southall
  * @since 1.0
  */
 public class DiscordTokenAutoConfiguration {

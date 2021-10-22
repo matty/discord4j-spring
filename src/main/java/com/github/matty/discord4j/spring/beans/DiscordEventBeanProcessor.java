@@ -19,7 +19,6 @@ import java.util.Optional;
 /**
  * BeanPostProcessor for {@link Event}'s.
  *
- * @author Matty Southall
  * @since 1.0
  */
 @Component("discordEventBeanProcessor")
@@ -29,7 +28,7 @@ public class DiscordEventBeanProcessor implements BeanPostProcessor {
     EventDispatcher eventDispatcher;
 
     @Autowired
-    public DiscordEventBeanProcessor( EventDispatcher eventDispatcher) {
+    public DiscordEventBeanProcessor(EventDispatcher eventDispatcher) {
         this.eventDispatcher = eventDispatcher;
     }
 
@@ -63,11 +62,13 @@ public class DiscordEventBeanProcessor implements BeanPostProcessor {
                 .flatMap(e -> {
                     Optional<Object> r = Optional.ofNullable(ReflectionUtils.invokeMethod(method, bean, e));
                     return r.filter(o -> o instanceof Publisher)
-                            .map(o -> (Publisher)o)
+                            .map(o -> (Publisher) o)
                             .orElse(Mono.empty());
                 })
-                .doOnError(error -> EventUtils.doOnError(bean, error))
-                .onErrorStop()
+                .doOnError(error -> {
+                    EventUtils.doOnError(bean, error);
+                    doEvent(method, bean, parameterClazz);
+                })
                 .subscribe();
     }
 }

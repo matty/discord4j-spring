@@ -12,7 +12,6 @@ import java.lang.annotation.Target;
 /**
  * Annotation to enable Discord support in a Spring Boot application.
  *
- * @author Matty Southall
  * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)

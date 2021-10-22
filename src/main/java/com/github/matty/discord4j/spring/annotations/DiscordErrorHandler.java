@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 /**
  * Annotation for dispatching errors.
  *
- * @author Matty Southall
  * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)

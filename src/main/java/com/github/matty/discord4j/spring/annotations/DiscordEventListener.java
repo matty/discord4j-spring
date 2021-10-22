@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 /**
  * Annotation for methods which Discord4j events are dispatched to.
  *
- * @author Matty Southall
  * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)

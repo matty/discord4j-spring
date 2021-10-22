@@ -17,7 +17,6 @@ import org.springframework.context.annotation.Import;
 /**
  * Auto-configuration for {@link DiscordClient}.
  *
- * @author Matty Southall
  * @since 1.0
  */
 @Configuration
